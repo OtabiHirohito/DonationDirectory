@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>寄付先へ移動中...</title>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+    background-color: #f8f9fa;
+    color: #333;
+    text-align: center;
+    padding: 20px;
+  }
+  .container {
+    background: #ffffff;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    max-width: 450px;
+    width: 100%;
+  }
+  h2 {
+    font-size: 1.25rem;
+    margin-bottom: 0.75rem;
+    color: #1a1a1a;
+  }
+  p {
+    font-size: 0.95rem;
+    color: #666;
+  }
+  a.btn {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.6rem 1.2rem;
+    background-color: #0066cc;
+    color: #ffffff;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: bold;
+  }
+  a.btn:hover {
+    background-color: #004999;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h2 id="target-name">寄付先へ移動しています…</h2>
+  <p>自動的にページが切り替わらない場合は、下のボタンを押してください。</p>
+  <a id="redirect-btn" class="btn" href="index.html">寄付先ページを開く</a>
+</div>
+
+<script>
+(function() {
+  const fallbackLinks = [
+    { name: "国境なき医師団", url: "https://www.msf.or.jp/donate_bin/onetime.php" },
+    { name: "UNICEF", url: "https://www.unicef.or.jp/webapp/controller/bokin/combine_input.php?tabid=0.4929368036814241&pagetype=combine_individual_input" },
+    { name: "日本赤十字社", url: "https://donate.jrc.or.jp/" },
+    { name: "Against Malaria", url: "https://www.againstmalaria.com/donate.aspx" },
+    { name: "セーブ・ザ・チルドレン", url: "https://www.savechildren.or.jp/contribute/" },
+    { name: "WFP", url: "https://jawfp.my.site.com/jawfp/s/donation" },
+    { name: "がんの子どもを守る会", url: "https://www.ccaj-found.or.jp/forms/creditonce/" },
+    { name: "シャイン・オン！キッズ", url: "https://sokids.org/ja/how-to-help/donate2/" },
+    { name: "アニマル・ドネーション", url: "https://www.animaldonation.org/#top-supporters" },
+    { name: "東京キャットガーディアン", url: "https://tokyocatguardian.org/donation/" },
+    { name: "どうぶつ基金", url: "https://www.doubutukikin.or.jp/legal/business/" },
+    { name: "犬と猫のためのライフボート", url: "https://www.lifeboat.or.jp/cooperation/" },
+    { name: "ねこけん", url: "https://nekoken.jp/support/#donation" },
+    { name: "Animal Refuge Kansai", url: "https://arkbark.net/support/donate/" },
+    { name: "ピースニャンコ", url: "https://nyanko.peace-winds.org/support/" },
+    { name: "smile cat", url: "https://smilecat.jp/support/" }
+  ];
+
+  function getRandomItem(array) {
+    return array[Math.floor(Math.random() * array.length)];
+  }
+
+  function updateUI(item) {
+    document.title = `${item.name} へ移動中...`;
+    const heading = document.getElementById('target-name');
+    if (heading) heading.textContent = `「${item.name}」へ移動しています…`;
+    const btn = document.getElementById('redirect-btn');
+    if (btn) {
+      btn.href = item.url;
+      btn.textContent = `「${item.name}」を開く`;
+    }
+  }
+
+  function doRedirect(item) {
+    updateUI(item);
+    window.location.replace(item.url);
+  }
+
+  const immediateTarget = getRandomItem(fallbackLinks);
+  updateUI(immediateTarget);
+
+  fetch('index.html')
+    .then(function(res) { return res.text(); })
+    .then(function(html) {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+      const anchors = Array.from(doc.querySelectorAll('main h2 > a[href]'));
+      const items = anchors.map(function(a) {
+        return { name: a.textContent.trim(), url: a.getAttribute('href') };
+      }).filter(function(item) { return item.url && item.name; });
+
+      if (items.length > 0) {
+        doRedirect(getRandomItem(items));
+      } else {
+        doRedirect(immediateTarget);
+      }
+    })
+    .catch(function() {
+      doRedirect(immediateTarget);
+    });
+})();
+</script>
+</body>
+</html>
