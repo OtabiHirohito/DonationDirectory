@@ -18,7 +18,16 @@ function setupTocScrollSpy() {
     next.classList.add('toc-active');
     next.setAttribute('aria-current', 'location');
     activeId = id;
-    next.scrollIntoView({ block: 'nearest' });
+
+    const navRect = nav.getBoundingClientRect();
+    if (navRect.height > 0) {
+      const linkRect = next.getBoundingClientRect();
+      if (linkRect.top < navRect.top) {
+        nav.scrollTop += (linkRect.top - navRect.top);
+      } else if (linkRect.bottom > navRect.bottom) {
+        nav.scrollTop += (linkRect.bottom - navRect.bottom);
+      }
+    }
   };
   let ticking = false;
   const update = () => {
